@@ -239,8 +239,10 @@ class FairdomSeek(object):
 
         # First, try to fetch the object by ID
         try:
+            if not str(object_id).isdigit():
+                raise Exception(f"Object ID '{object_id}' is not a valid integer.")
             return self.fetch(object_type, object_id)
-        except FairdomSeekApiException as e:
+        except Exception as e:
             # If not found, create the object
             print(e)
             return self.create(object_type, attributes, relationships)
