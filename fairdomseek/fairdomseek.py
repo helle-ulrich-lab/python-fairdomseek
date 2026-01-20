@@ -26,7 +26,9 @@ class FairdomSeekApiException(Exception):
                     for e in errors
                 ]
             )
-            message = message if message else "Unknown error."
+            message = (
+                message if message else getattr(response, "reason", "Unknown error.")
+            )
         except:
             message = getattr(response, "reason", "Unknown error.")
         super().__init__(message)
