@@ -240,3 +240,34 @@ class FairdomSeek(object):
             # If not found, create the object
             print(e)
             return self.create(object_type, attributes, relationships)
+
+    def upload_file_to_blob(
+        self,
+        object_type: str,
+        blob_link: str,
+        file_path: str,
+        mime_type: str,
+    ) -> dict:
+        """Upload a file to a blob link."""
+
+        allowed_types = ["data_files"]
+
+        if object_type not in allowed_types:
+            raise Exception(
+                f'Object type "{object_type}" not recognized. Valid types are: {", ".join(allowed_types)}'
+            )
+
+        self._check_logged_in()
+
+        with open(file_path, "rb") as file_handle:
+            file_content = file_handle.read()
+            r = self.session.put(
+                blob_link,
+                data=file_content,
+                headers={"Content-Type": mime_type},
+            )
+
+        if r.status_code == 200:
+            return r.json()["data"]
+        else:
+            raise FairdomSeekApiException(error=r.json())
