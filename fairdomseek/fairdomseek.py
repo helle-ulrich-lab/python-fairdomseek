@@ -14,17 +14,21 @@ from .seek_objects import (
 class FairdomSeekApiException(Exception):
     """A class to handle errors received from the FAIRDOM-SEEK API"""
 
-    def __init__(self, message: str = "", error: dict = {}):
-        errors = error.get("errors", "")
-        api_message = ". ".join(
-            [
-                ", ".join(
-                    [y for y in [e.get("title", None), e.get("detail", None)] if y]
-                )
-                for e in errors
-            ]
-        )
-        message = api_message if api_message else message
+    def __init__(self, response: requests.Response = None):
+        try:
+            errors = response.json() if response else {}
+            errors = errors.get("errors", [])
+            message = ". ".join(
+                [
+                    ", ".join(
+                        [y for y in [e.get("title", None), e.get("detail", None)] if y]
+                    )
+                    for e in errors
+                ]
+            )
+            message = message if message else "Unknown error."
+        except:
+            message = getattr(response, "reason", "Unknown error.")
         super().__init__(message)
 
 
@@ -90,7 +94,7 @@ class FairdomSeek(object):
         elif token and r.status_code == 404:
             self.session = session
         else:
-            raise FairdomSeekApiException(error=r.json())
+            raise FairdomSeekApiException(response=r)
 
     def list(self, object_type: str) -> dict:
         """List objects of a given type."""
@@ -110,7 +114,7 @@ class FairdomSeek(object):
         if r.status_code == 200:
             return r.json()["data"]
         else:
-            raise FairdomSeekApiException(error=r.json())
+            raise FairdomSeekApiException(response=r)
 
     def create(self, object_type: str, attributes: dict, relationships: dict) -> dict:
         """Create an object of a given type."""
@@ -139,7 +143,7 @@ class FairdomSeek(object):
         if r.status_code == 201 or r.status_code == 200:
             return r.json()["data"]
         else:
-            raise FairdomSeekApiException(error=r.json())
+            raise FairdomSeekApiException(response=r)
 
     def update(
         self, object_type: str, object_id: str, attributes: dict, relationships: dict
@@ -171,7 +175,7 @@ class FairdomSeek(object):
         if r.status_code == 200:
             return r.json()["data"]
         else:
-            raise FairdomSeekApiException(error=r.json())
+            raise FairdomSeekApiException(response=r)
 
     def delete(self, object_type: str, object_id: str) -> None:
         """Delete an object of a given type."""
@@ -191,7 +195,7 @@ class FairdomSeek(object):
         if r.status_code == 200:
             print(f"{object_type} {object_id} deleted successfully.")
         else:
-            raise FairdomSeekApiException(error=r.json())
+            raise FairdomSeekApiException(response=r)
 
     def fetch(self, object_type: str, object_id: str) -> dict:
         """Fetch an object of a given type."""
@@ -212,7 +216,7 @@ class FairdomSeek(object):
             return r.json()["data"]
         else:
             print(r.json())
-            raise FairdomSeekApiException(error=r.json())
+            raise FairdomSeekApiException(response=r)
 
     def fetch_or_create(
         self,
@@ -268,6 +272,6 @@ class FairdomSeek(object):
             )
 
         if r.status_code == 200:
-            return r.json()["data"]
+            return r.json()
         else:
-            raise FairdomSeekApiException(error=r.json())
+            raise FairdomSeekApiException(response=r)
