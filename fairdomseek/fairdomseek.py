@@ -1,5 +1,7 @@
 import getpass
+
 import requests
+
 from .seek_objects import (
     OBJECTS_CREATE,
     OBJECTS_DELETE,
@@ -211,3 +213,30 @@ class FairdomSeek(object):
         else:
             print(r.json())
             raise FairdomSeekApiException(error=r.json())
+
+    def fetch_or_create(
+        self,
+        object_type: str,
+        object_id: str,
+        attributes: dict,
+        relationships: dict,
+    ) -> dict:
+        """Fetch an object of a given type by ID, or create it if it does not exist."""
+
+        objects_fetch_create = list(
+            set(self._objects_fetch).intersection(self._objects_create)
+        )
+        if object_type not in objects_fetch_create:
+            raise Exception(
+                f'Object type "{object_type}" not recognized. Valid types are: {", ".join(objects_fetch_create)}'
+            )
+
+        self._check_logged_in()
+
+        # First, try to fetch the object by ID
+        try:
+            return self.fetch(object_type, object_id)
+        except FairdomSeekApiException as e:
+            # If not found, create the object
+            print(e)
+            return self.create(object_type, attributes, relationships)
