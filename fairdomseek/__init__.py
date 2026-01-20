@@ -1,1 +1,1 @@
-from fairdomseek.fairdomseek import *
+from .fairdomseek import *
