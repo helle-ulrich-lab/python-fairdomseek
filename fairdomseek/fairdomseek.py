@@ -72,6 +72,14 @@ class FairdomSeek(object):
 
         return True
 
+    def _check_allowed_object_type(self, object_type, objects_list):
+        """Check if object_type is allowed for operation type"""
+
+        if object_type not in objects_list:
+            raise Exception(
+                f'Object type "{object_type}" not recognized. Valid types are: {", ".join(objects_list)}'
+            )
+
     def login(self, token: str = "") -> None:
         """
         Log in user
@@ -101,11 +109,7 @@ class FairdomSeek(object):
     def list(self, object_type: str) -> dict:
         """List objects of a given type."""
 
-        if object_type not in self._objects_list:
-            raise Exception(
-                f'Object type "{object_type}" not recognized. Valid types are: {", ".join(self._objects_list)}'
-            )
-
+        self._check_allowed_object_type(object_type, self._objects_list)
         self._check_logged_in()
 
         r = self.session.get(
@@ -121,11 +125,7 @@ class FairdomSeek(object):
     def create(self, object_type: str, attributes: dict, relationships: dict) -> dict:
         """Create an object of a given type."""
 
-        if object_type not in self._objects_create:
-            raise Exception(
-                f'Object type "{object_type}" not recognized. Valid types are: {", ".join(self._objects_create)}'
-            )
-
+        self._check_allowed_object_type(object_type, self._objects_create)
         self._check_logged_in()
 
         data = {
@@ -152,11 +152,7 @@ class FairdomSeek(object):
     ) -> dict:
         """Update an object of a given type."""
 
-        if object_type not in self._objects_update:
-            raise Exception(
-                f'Object type "{object_type}" not recognized. Valid types are: {", ".join(self._objects_update)}'
-            )
-
+        self._check_allowed_object_type(object_type, self._objects_update)
         self._check_logged_in()
 
         data = {
@@ -182,11 +178,7 @@ class FairdomSeek(object):
     def delete(self, object_type: str, object_id: str) -> None:
         """Delete an object of a given type."""
 
-        if object_type not in self._objects_delete:
-            raise Exception(
-                f'Object type "{object_type}" not recognized. Valid types are: {", ".join(self._objects_delete)}'
-            )
-
+        self._check_allowed_object_type(object_type, self._objects_delete)
         self._check_logged_in()
 
         r = self.session.delete(
@@ -202,12 +194,12 @@ class FairdomSeek(object):
     def fetch(self, object_type: str, object_id: str) -> dict:
         """Fetch an object of a given type."""
 
-        if object_type not in self._objects_fetch:
-            raise Exception(
-                f'Object type "{object_type}" not recognized. Valid types are: {", ".join(self._objects_fetch)}'
-            )
-
+        self._check_allowed_object_type(object_type, self._objects_fetch)
         self._check_logged_in()
+
+        # Check if object_id is valid integer
+        if not str(object_id).isdigit():
+            raise Exception(f"Object ID '{object_id}' is not a valid integer.")
 
         r = self.session.get(
             f"{self._api_base_url}/{object_type}/{object_id}",
@@ -232,17 +224,11 @@ class FairdomSeek(object):
         objects_fetch_create = list(
             set(self._objects_fetch).intersection(self._objects_create)
         )
-        if object_type not in objects_fetch_create:
-            raise Exception(
-                f'Object type "{object_type}" not recognized. Valid types are: {", ".join(objects_fetch_create)}'
-            )
-
+        self._check_allowed_object_type(object_type, objects_fetch_create)
         self._check_logged_in()
 
         # First, try to fetch the object by ID
         try:
-            if not str(object_id).isdigit():
-                raise Exception(f"Object ID '{object_id}' is not a valid integer.")
             return self.fetch(object_type, object_id)
         except Exception as e:
             # If not found, create the object
@@ -259,12 +245,7 @@ class FairdomSeek(object):
         """Upload a file to a blob link."""
 
         allowed_types = ["data_files"]
-
-        if object_type not in allowed_types:
-            raise Exception(
-                f'Object type "{object_type}" not recognized. Valid types are: {", ".join(allowed_types)}'
-            )
-
+        self._check_allowed_object_type(object_type, allowed_types)
         self._check_logged_in()
 
         with open(file_path, "rb") as file_handle:
