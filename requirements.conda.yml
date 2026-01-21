@@ -1,0 +1,8 @@
+name: fairdomseek_api
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - ipykernel # optional, for Jupyter
+  - python>=3.6,<=3.14
+  - requests
