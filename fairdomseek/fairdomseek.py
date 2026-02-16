@@ -240,7 +240,6 @@ class FairdomSeek(object):
         object_type: str,
         blob_link: str,
         file_path: str,
-        mime_type: str,
     ) -> dict:
         """Upload a file to a blob link."""
 
@@ -253,7 +252,7 @@ class FairdomSeek(object):
             r = self.session.put(
                 blob_link,
                 data=file_content,
-                headers={"Content-Type": mime_type},
+                headers={"Content-Type": "application/octet-stream"},
             )
 
         if r.status_code == 200:
