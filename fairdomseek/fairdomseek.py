@@ -248,10 +248,9 @@ class FairdomSeek(object):
         self._check_logged_in()
 
         with open(file_path, "rb") as file_handle:
-            file_content = file_handle.read()
             r = self.session.put(
                 blob_link,
-                data=file_content,
+                data=file_handle,
                 headers={"Content-Type": "application/octet-stream"},
             )
 
