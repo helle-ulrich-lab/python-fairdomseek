@@ -243,7 +243,7 @@ class FairdomSeek(object):
     ) -> dict:
         """Upload a file to a blob link."""
 
-        allowed_types = ["data_files"]
+        allowed_types = ["data_files", "sops"]
         self._check_allowed_object_type(object_type, allowed_types)
         self._check_logged_in()
 
